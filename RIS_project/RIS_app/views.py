@@ -1,3 +1,4 @@
+import datetime
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login as auth_login , logout
@@ -6,7 +7,12 @@ from django.contrib import messages
 
 # Create your views here.
 def home(request):
-    return render(request, 'home.html', {})
+    name = request.user.username if request.user.is_authenticated else None
+    # print("NAME= ",name)
+    x = datetime.datetime.now()
+    # print(x)
+    date_today = x.strftime("%a %d, %b %Y %I:%M%p")
+    return render(request, 'home.html', {'username':name, 'date_today':date_today })
 
 def register(request):
     if request.user.is_authenticated:
