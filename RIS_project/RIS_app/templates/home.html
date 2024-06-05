@@ -6,6 +6,16 @@
     <title>Document</title>
 </head>
 <body>
-    Hello world!
+    {% if username %}
+    <h1>
+        Welcome, {{username}}!
+    </h1>
+    {% endif %}
+    
+    {% if date_today %}
+    <h1>
+        {{date_today}}
+    </h1>
+    {% endif %}
 </body>
 </html>
