@@ -67,9 +67,9 @@
     <div class="register-container">
         <h2>Register</h2>
         {% if messages %}
-            {% for msg in messages %}
-                <h4 style="color: red;"> {{ msg }} </h4>
-            {% endfor %}
+        {% for msg in messages %}
+        <h4 style="color: red;"> {{ msg }} </h4>
+        {% endfor %}
         {% endif %}
         <form id="registerForm" onsubmit="return validateForm()" method="post">
             {% csrf_token %}
@@ -84,7 +84,7 @@
             <div class="input-group">
                 <label for="password">Password</label>
                 <input type="password" id="password" name="password" required>
-                
+
             </div>
             <div class="input-group">
                 <label for="confirmPassword">Confirm Password</label>
