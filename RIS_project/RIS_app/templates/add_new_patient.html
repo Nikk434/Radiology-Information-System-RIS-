@@ -1,0 +1,41 @@
+<!-- myapp/templates/add_new_patient.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Patient</title>
+</head>
+<body>
+    <form method="post">
+        {% csrf_token %}
+        <label for="name">Name:</label>
+        <input type="text" name="name" id="name">
+        <br><br>
+        <label for="age">Age:</label>
+        <input type="number" name="age" id="age">
+        <br><br>
+        <label for="address">Address:</label>
+        <textarea name="address" id="address" cols="30" rows="10"></textarea>
+        <br><br>
+        <label for="email">Email:</label>
+        <input type="email" name="email" id="email">
+        <br><br>
+        <label>Gender:</label>
+        <input type="radio" name="gender" value="male" id="male">
+        <label for="male">Male</label>
+        <input type="radio" name="gender" value="female" id="female">
+        <label for="female">Female</label>
+        <input type="radio" name="gender" value="others" id="others">
+        <label for="others">Others</label>
+        <br><br>
+        <label for="dr">Prescribing Doctor:</label>
+        <input type="text" name="dr" id="dr">
+        <br><br>
+        <label for="xray">Prescribed X-ray:</label>
+        <input type="text" name="xray" id="xray">
+        <br><br>
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
