@@ -3,7 +3,11 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login as auth_login , logout
 from django.contrib import messages
-from django.contrib.auth.forms import AuthenticationForm
+import pymongo
+from dotenv import load_dotenv
+import os 
+
+load_dotenv('D:\DJANGO\.env')
 
 # Create your views here.
 def home(request):
@@ -18,19 +22,37 @@ def add_new_patient(request):
     if request.method == 'POST':
         name = request.POST.get('name')
         age = request.POST.get('age')
+        address = request.POST.get('address')
         email = request.POST.get('email')
         gender = request.POST.get('gender')
         prescribing_doctor = request.POST.get('dr')
         prescribed_xray = request.POST.get('xray')
 
-        print(name)
-        print(age)
-        print(email)
-        print(gender)
-        print(prescribing_doctor)
-        print(prescribed_xray)
+        patient_detials = {
+            "name":name,
+            "age":age,
+            "address":address,
+            "email":email,
+            "gender":gender,
+            "prescribing_doctor":prescribing_doctor,
+            "prescribed_xray":prescribed_xray
+        }
 
+        username = os.getenv("MONGODB_USERNAME")
+        password = os.getenv("MONGODB_PASSWORD")
+        cluster_url = os.getenv("MONGODB_CLUSTER_URL")
 
+    # Construct the MongoDB URI
+        mongo_uri = f"mongodb+srv://{username}:{password}@{cluster_url}/?retryWrites=true&w=majority"
+        client = pymongo.MongoClient(mongo_uri)        
+
+        db = client["RISPATIENT"]
+        collection = db["patient_data"]
+
+    # Insert the document into the collection
+        collection.insert_one(patient_detials)
+        print("Content stored in MongoDB successfully.")
+        
         return redirect('home-page')
 
     return render(request, 'add_new_patient.html')
