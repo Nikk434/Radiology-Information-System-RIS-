@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login as auth_login , logout
 from django.contrib import messages
-
+from django.contrib.auth.forms import AuthenticationForm
 
 # Create your views here.
 def home(request):
@@ -13,6 +13,28 @@ def home(request):
     # print(x)
     date_today = x.strftime("%a %d, %b %Y %I:%M%p")
     return render(request, 'home.html', {'username':name, 'date_today':date_today })
+
+def add_new_patient(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        age = request.POST.get('age')
+        email = request.POST.get('email')
+        gender = request.POST.get('gender')
+        prescribing_doctor = request.POST.get('dr')
+        prescribed_xray = request.POST.get('xray')
+
+        print(name)
+        print(age)
+        print(email)
+        print(gender)
+        print(prescribing_doctor)
+        print(prescribed_xray)
+
+
+        return redirect('home-page')
+
+    return render(request, 'add_new_patient.html')
+    
 
 def register(request):
     if request.user.is_authenticated:
@@ -58,4 +80,5 @@ def login(request):
             return redirect('login')
     
     return render(request, 'login.html',{})
+
 
