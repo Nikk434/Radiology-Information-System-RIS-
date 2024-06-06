@@ -1,21 +1,25 @@
+<!-- myapp/templates/home.html -->
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Home Page</title>
 </head>
+
 <body>
     {% if username %}
-    <h1>
-        Welcome, {{username}}!
-    </h1>
+    <h1>Welcome, {{ username }}!</h1>
     {% endif %}
-    
+
     {% if date_today %}
-    <h1>
-        {{date_today}}
-    </h1>
+    <h1>{{ date_today }}</h1>
     {% endif %}
+
+    <a href="{% url 'add_new_patient' %}">
+        <button type="submit">Add new patient</button>
+    </a>
 </body>
+
 </html>
