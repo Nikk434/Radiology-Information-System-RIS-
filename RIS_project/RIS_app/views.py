@@ -12,11 +12,26 @@ load_dotenv('D:\DJANGO\.env')
 # Create your views here.
 def home(request):
     name = request.user.username if request.user.is_authenticated else None
-    # print("NAME= ",name)
     x = datetime.datetime.now()
-    # print(x)
-    date_today = x.strftime("%a %d, %b %Y %I:%M%p")
-    return render(request, 'home.html', {'username':name, 'date_today':date_today })
+    date_today = x.strftime("%a %d, %b %Y")
+    time_today = x.strftime("%I:%M%p") 
+    request.session['date_today'] = date_today
+
+    username = os.getenv("MONGODB_USERNAME")
+    password = os.getenv("MONGODB_PASSWORD")
+    cluster_url = os.getenv("MONGODB_CLUSTER_URL")
+
+    # Construct the MongoDB URI
+    mongo_uri = f"mongodb+srv://{username}:{password}@{cluster_url}/?retryWrites=true&w=majority"
+    client = pymongo.MongoClient(mongo_uri)        
+
+    db = client["RISPATIENT"]
+    collection = db["patient_data"]
+
+    # Fetch data that matches today's date
+    data = list(collection.find({"date": date_today}))
+
+    return render(request, 'home.html', {'username': name, 'date_today': date_today, 'time_today':time_today, 'data': data})
 
 def add_new_patient(request):
     if request.method == 'POST':
@@ -27,8 +42,10 @@ def add_new_patient(request):
         gender = request.POST.get('gender')
         prescribing_doctor = request.POST.get('dr')
         prescribed_xray = request.POST.get('xray')
+        date_today = request.session.get('date_today')
 
         patient_detials = {
+            "date":date_today,
             "name":name,
             "age":age,
             "address":address,
@@ -57,6 +74,8 @@ def add_new_patient(request):
 
     return render(request, 'add_new_patient.html')
     
+def add_report_xray(request):
+    pass
 
 def register(request):
     if request.user.is_authenticated:
