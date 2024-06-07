@@ -1,25 +1,68 @@
-<!-- myapp/templates/home.html -->
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home Page</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid black;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        button {
+            padding: 5px 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
 </head>
-
 <body>
-    {% if username %}
-    <h1>Welcome, {{ username }}!</h1>
-    {% endif %}
-
-    {% if date_today %}
-    <h1>{{ date_today }}</h1>
-    {% endif %}
-
-    <a href="{% url 'add_new_patient' %}">
-        <button type="submit">Add new patient</button>
-    </a>
+    <h1>Welcome, {{ username }}</h1>
+    <p>Today's Date: {{ date_today }}</p>
+    <h2>Patients Data for Today</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Age</th>
+                <th>Address</th>
+                <th>Email</th>
+                <th>Gender</th>
+                <th>Prescribing Doctor</th>
+                <th>Prescribed X-ray</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for patient in data %}
+                <tr>
+                    <td>{{ patient.name }}</td>
+                    <td>{{ patient.age }}</td>
+                    <td>{{ patient.address }}</td>
+                    <td>{{ patient.email }}</td>
+                    <td>{{ patient.gender }}</td>
+                    <td>{{ patient.prescribing_doctor }}</td>
+                    <td>{{ patient.prescribed_xray }}</td>
+                    <td>
+                        <a href="{% url 'add_report_xray' %}">
+                            <button type="submit">Add Report and X-ray</button>
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </body>
-
 </html>
