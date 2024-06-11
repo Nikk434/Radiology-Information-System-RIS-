@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Home Page</title>
@@ -8,14 +9,18 @@
             width: 100%;
             border-collapse: collapse;
         }
-        th, td {
+
+        th,
+        td {
             padding: 10px;
             border: 1px solid black;
             text-align: left;
         }
+
         th {
             background-color: #f2f2f2;
         }
+
         button {
             padding: 5px 10px;
             background-color: #4CAF50;
@@ -23,11 +28,70 @@
             border: none;
             cursor: pointer;
         }
+
         button:hover {
             background-color: #45a049;
         }
+
+        .form-popup {
+            display: none;
+            position: fixed;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            border: 3px solid #ccc;
+            z-index: 9;
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .form-container {
+            max-width: 400px;
+            padding: 10px;
+            background-color: white;
+        }
+
+        .form-container h2 {
+            margin: 0 0 15px;
+        }
+
+        .form-container input[type="text"],
+        .form-container input[type="number"],
+        .form-container input[type="date"],
+        .form-container textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0 10px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+        }
+
+        .form-container .btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 10px;
+            opacity: 0.8;
+        }
+
+        .form-container .btn.cancel {
+            background-color: red;
+        }
+
+        .form-container .step {
+            display: none;
+        }
+
+        .form-container .step.active {
+            display: block;
+        }
     </style>
 </head>
+
 <body>
     <h1>Welcome, {{ username }}</h1>
     <p>Today's Date: {{ date_today }}</p>
@@ -47,22 +111,158 @@
         </thead>
         <tbody>
             {% for patient in data %}
-                <tr>
-                    <td>{{ patient.name }}</td>
-                    <td>{{ patient.age }}</td>
-                    <td>{{ patient.address }}</td>
-                    <td>{{ patient.email }}</td>
-                    <td>{{ patient.gender }}</td>
-                    <td>{{ patient.prescribing_doctor }}</td>
-                    <td>{{ patient.prescribed_xray }}</td>
-                    <td>
-                        <a href="{% url 'add_report_xray' %}">
-                            <button type="submit">Add Report and X-ray</button>
-                        </a>
-                    </td>
-                </tr>
+            <tr>
+                <td>{{ patient.name }}</td>
+                <td>{{ patient.age }}</td>
+                <td>{{ patient.address }}</td>
+                <td>{{ patient.email }}</td>
+                <td>{{ patient.gender }}</td>
+                <td>{{ patient.prescribing_doctor }}</td>
+                <td>{{ patient.prescribed_xray }}</td>
+                <td>
+                    <button class="openFormBtn">Add Report and X-ray</button>
+                </td>
+            </tr>
             {% endfor %}
         </tbody>
     </table>
+
+    <div id="formPopup" class="form-popup">
+        <form action="{% url 'add_report_xray' %}" class="form-container" method="post">
+            {% csrf_token %}
+            <div class="step active" id="step1">
+                <h2>Confirm Details</h2>
+                <label for="name">Name:</label>
+                <input type="text" name="name" id="name" required>
+                <br><br>
+                <label for="age">Age:</label>
+                <input type="number" name="age" id="age" required>
+                <br><br>
+                <label>Gender:</label>
+                <input type="radio" name="gender" value="male" id="male" required>
+                <label for="male">Male</label>
+                <input type="radio" name="gender" value="female" id="female">
+                <label for="female">Female</label>
+                <input type="radio" name="gender" value="others" id="others">
+                <label for="others">Others</label>
+                <br><br>
+                <label for="exam_date">Examination Date:</label>
+                <input type="date" name="exam_date" id="exam_date" value="{{ date_today }}" required>
+                <button type="button" class="btn nextBtn">Next</button>
+            </div>
+
+            <div class="step" id="step2">
+                <h2>Referring Physician</h2>
+                <label for="referringPhysicianName"><b>Name</b></label>
+                <input type="text" placeholder="Referring Physician Name" id="referringPhysicianName" name="referringPhysicianName" required>
+
+                <label for="contactInformation"><b>Contact Information</b></label>
+                <input type="text" placeholder="Contact Information" id="contactInformation" name="contactInformation" required>
+
+                <button type="button" class="btn prevBtn">Previous</button>
+                <button type="button" class="btn nextBtn">Next</button>
+            </div>
+
+            <div class="step" id="step3">
+                <h2>Examination Details</h2>
+                <label for="typeOfExamination"><b>Type of Examination</b></label>
+                <input type="text" placeholder="Type of X-Ray" id="typeOfExamination" name="typeOfExamination" required>
+
+                <label for="bodyPartExamined"><b>Body Part Examined</b></label>
+                <input type="text" placeholder="Body Part" id="bodyPartExamined" name="bodyPartExamined" required>
+
+                <label for="clinicalIndication"><b>Clinical Indication</b></label>
+                <input type="text" placeholder="Clinical Indication/Reason for Exam" id="clinicalIndication" name="clinicalIndication" required>
+
+                <button type="button" class="btn prevBtn">Previous</button>
+                <button type="button" class="btn nextBtn">Next</button>
+            </div>
+
+            <div class="step" id="step4">
+                <h2>Technical Information</h2>
+                <label for="xrayMachineModel"><b>X-Ray Machine Model</b></label>
+                <input type="text" placeholder="Model" id="xrayMachineModel" name="xrayMachineModel" required>
+
+                <label for="exposureParameters"><b>Exposure Parameters</b></label>
+                <input type="text" placeholder="Exposure Parameters" id="exposureParameters" name="exposureParameters" required>
+
+                <label for="radiographerName"><b>Radiographer/Technician</b></label>
+                <input type="text" placeholder="Name" id="radiographerName" name="radiographerName" required>
+
+                <button type="button" class="btn prevBtn">Previous</button>
+                <button type="button" class="btn nextBtn">Next</button>
+            </div>
+
+            <div class="step" id="step5">
+                <label for="findings"><b>Findings</b></label>
+                <textarea placeholder="Findings" id="findings" name="findings" required></textarea>
+
+                <label for="impression"><b>Impression</b></label>
+                <textarea placeholder="Impression" id="impression" name="impression" required></textarea>
+
+                <label for="recommendations"><b>Recommendations</b></label>
+                <textarea placeholder="Recommendations" id="recommendations" name="recommendations" required></textarea>
+
+                <label for="radiologistName"><b>Name</b></label>
+                <input type="text" placeholder="Radiologist Name" id="radiologistName" name="radiologistName" required>
+
+                <label for="dateOfReport"><b>Date</b></label>
+                <input type="date" id="dateOfReport" name="dateOfReport" required value="{{ date_today }}">
+
+                <button type="button" class="btn prevBtn">Previous</button>
+                <button type="submit" class="btn">Submit</button>
+            </div>
+
+            <button type="button" class="btn cancel" id="closeFormBtn">Close</button>
+        </form>
+    </div>
+
+    <script>
+        document.querySelectorAll('.openFormBtn').forEach(button => {
+            button.addEventListener('click', () => {
+                document.getElementById('formPopup').style.display = 'block';
+            });
+        });
+
+        document.getElementById('closeFormBtn').addEventListener('click', () => {
+            document.getElementById('formPopup').style.display = 'none';
+        });
+
+        window.addEventListener('click', (event) => {
+            if (event.target == document.getElementById('formPopup')) {
+                document.getElementById('formPopup').style.display = 'none';
+            }
+        });
+
+        const steps = document.querySelectorAll('.step');
+        let currentStep = 0;
+
+        function showStep(step) {
+            steps.forEach((stepElement, index) => {
+                stepElement.classList.toggle('active', index === step);
+            });
+        }
+
+        document.querySelectorAll('.nextBtn').forEach(button => {
+            button.addEventListener('click', () => {
+                if (currentStep < steps.length - 1) {
+                    currentStep++;
+                    showStep(currentStep);
+                }
+            });
+        });
+
+        document.querySelectorAll('.prevBtn').forEach(button => {
+            button.addEventListener('click', () => {
+                if (currentStep > 0) {
+                    currentStep--;
+                    showStep(currentStep);
+                }
+            });
+        });
+
+        showStep(currentStep);
+    </script>
 </body>
+
 </html>
