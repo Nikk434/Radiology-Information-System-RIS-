@@ -128,7 +128,7 @@
     </table>
 
     <div id="formPopup" class="form-popup">
-        <form action="{% url 'add_report_xray' %}" class="form-container" method="post">
+        <form action="{% url 'add_report_xray' %}" class="form-container" method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="step active" id="step1">
                 <h2>Confirm Details</h2>
@@ -154,10 +154,12 @@
             <div class="step" id="step2">
                 <h2>Referring Physician</h2>
                 <label for="referringPhysicianName"><b>Name</b></label>
-                <input type="text" placeholder="Referring Physician Name" id="referringPhysicianName" name="referringPhysicianName" required>
+                <input type="text" placeholder="Referring Physician Name" id="referringPhysicianName"
+                    name="referringPhysicianName" required>
 
                 <label for="contactInformation"><b>Contact Information</b></label>
-                <input type="text" placeholder="Contact Information" id="contactInformation" name="contactInformation" required>
+                <input type="text" placeholder="Contact Information" id="contactInformation" name="contactInformation"
+                    required>
 
                 <button type="button" class="btn prevBtn">Previous</button>
                 <button type="button" class="btn nextBtn">Next</button>
@@ -172,7 +174,8 @@
                 <input type="text" placeholder="Body Part" id="bodyPartExamined" name="bodyPartExamined" required>
 
                 <label for="clinicalIndication"><b>Clinical Indication</b></label>
-                <input type="text" placeholder="Clinical Indication/Reason for Exam" id="clinicalIndication" name="clinicalIndication" required>
+                <input type="text" placeholder="Clinical Indication/Reason for Exam" id="clinicalIndication"
+                    name="clinicalIndication" required>
 
                 <button type="button" class="btn prevBtn">Previous</button>
                 <button type="button" class="btn nextBtn">Next</button>
@@ -184,7 +187,8 @@
                 <input type="text" placeholder="Model" id="xrayMachineModel" name="xrayMachineModel" required>
 
                 <label for="exposureParameters"><b>Exposure Parameters</b></label>
-                <input type="text" placeholder="Exposure Parameters" id="exposureParameters" name="exposureParameters" required>
+                <input type="text" placeholder="Exposure Parameters" id="exposureParameters" name="exposureParameters"
+                    required>
 
                 <label for="radiographerName"><b>Radiographer/Technician</b></label>
                 <input type="text" placeholder="Name" id="radiographerName" name="radiographerName" required>
@@ -209,10 +213,19 @@
                 <label for="dateOfReport"><b>Date</b></label>
                 <input type="date" id="dateOfReport" name="dateOfReport" required value="{{ date_today }}">
 
+
+                <button type="button" class="btn prevBtn">Previous</button>
+                <button type="button" class="btn nextBtn">Next</button>
+            </div>
+            <div class="step" id="step6">
+                {{ form.as_p }}
+                <label for="uploaded_file"><b>Upload X-ray File</b></label>
+                <input type="file" id="uploaded_file" name="uploaded_file" required>
+
                 <button type="button" class="btn prevBtn">Previous</button>
                 <button type="submit" class="btn">Submit</button>
-            </div>
 
+            </div>
             <button type="button" class="btn cancel" id="closeFormBtn">Close</button>
         </form>
     </div>
