@@ -6,6 +6,10 @@ from django.contrib import messages
 import pymongo
 from dotenv import load_dotenv
 import os 
+from django.conf import settings
+from django.core.files.storage import FileSystemStorage
+from .forms import DocumentForm
+# from .models import Document
 from docx import Document
 
 
@@ -79,7 +83,7 @@ def add_new_patient(request):
 def add_report_xray(request):
     if request.method == 'POST':
         name = request.POST.get('name')
-        age = request.POST.get('Patient DOB')
+        age = request.POST.get('age')
         gender = request.POST.get('gender')
         date = request.POST.get('exam_date')
         referringPhysicianName = request.POST.get('referringPhysicianName')
@@ -99,7 +103,7 @@ def add_report_xray(request):
         def get_user_inpu():
             patient_info = {
                 'Patient Name': name,
-                'Patient age': age,
+                'Patient DOB': age,
                 'Patient Gender': gender,
                 'Examination Date': date,
                 'Referring Physician Name': referringPhysicianName,
@@ -119,15 +123,21 @@ def add_report_xray(request):
             return patient_info    
         
         def replace_placeholders(template_path, output_path, replacements):
-            doc = Document(template_path)
-            for paragraph in doc.paragraphs:
-                for key, value in replacements.items():
-                    if key in paragraph.text:
-                        paragraph.text = paragraph.text.replace(f'[{key}]', value)
-            doc.save(output_path)
+            try:
+                doc = Document(template_path)
+                for paragraph in doc.paragraphs:
+                    for key, value in replacements.items():
+                        if f'[{key}]' in paragraph.text:  # Ensure the placeholder format is correct
+                            paragraph.text = paragraph.text.replace(f'[{key}]', value)
+                            print(f"Replaced [{key}] with {value}")
+
+                doc.save(output_path)
+                print(f"Document saved to {output_path}")
+            except Exception as e:
+                print(f"An error occurred: {e}")
         
-        template_path = 'D:\DJANGO\\report_template.docx'  # Path to your template
-        output_path = 'report.docx'  # Path where the filled document will be saved
+        template_path = 'D:\DJANGO\\report_template.docx'  # Use raw string to handle backslashes
+        output_path = 'D:\DJANGO\RIS\Reports\\report.docx'  # Path where the filled document will be saved
 
     # Get user     
         user_info = get_user_inpu()
@@ -135,8 +145,32 @@ def add_report_xray(request):
     # Replace placeholders and save the document
         replace_placeholders(template_path, output_path, user_info)
 
-        print(f"Document saved as {output_path}")
+        # # print(f"Document saved as {output_path}")
 
+        # #function to add xray image 
+        # def get_xray():
+        #     if request.method == 'POST':
+        #         form = DocumentForm(request.POST, request.FILES)
+        #         if form.is_valid():
+        #             form.save()
+        #             print("Xray uploaded")
+        #             return redirect('home')  # Redirect to the home page or another relevant page
+        #     else:   
+        #         form = DocumentForm() 
+        #         print("loda lasun")
+
+        # get_xray()
+        form = DocumentForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            print("X-ray uploaded successfully")
+        else:
+            print("Form is not valid")
+
+        return redirect('home-page')  # Redirect to the home page or another relevant page
+
+    else:
+        form = DocumentForm()
     return redirect('home-page')
 
 
