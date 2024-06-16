@@ -4,6 +4,8 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login as auth_login , logout
 from django.contrib import messages
 import pymongo
+from pymongo import MongoClient
+from gridfs import GridFS
 from dotenv import load_dotenv
 import os 
 from django.conf import settings
@@ -11,7 +13,8 @@ from django.core.files.storage import FileSystemStorage
 from .forms import DocumentForm
 # from .models import Document
 from docx import Document
-
+import json
+from django.urls import reverse
 
 load_dotenv('D:\DJANGO\.env')
 
@@ -60,11 +63,11 @@ def add_new_patient(request):
             "prescribing_doctor":prescribing_doctor,
             "prescribed_xray":prescribed_xray
         }
-
+        print(type(patient_detials))
         username = os.getenv("MONGODB_USERNAME")
         password = os.getenv("MONGODB_PASSWORD")
         cluster_url = os.getenv("MONGODB_CLUSTER_URL")
-
+        
     # Construct the MongoDB URI
         mongo_uri = f"mongodb+srv://{username}:{password}@{cluster_url}/?retryWrites=true&w=majority"
         client = pymongo.MongoClient(mongo_uri)        
@@ -75,6 +78,9 @@ def add_new_patient(request):
     # Insert the document into the collection
         collection.insert_one(patient_detials)
         print("Content stored in MongoDB successfully.")
+
+        query_params = f"?name={name}&age={age}&address={address}&email={email}&gender={gender}&dr={prescribing_doctor}&xray={prescribed_xray}&date_today={date_today}"
+        return redirect(reverse('upload') + query_params)
         
         return redirect('home-page')
 
@@ -171,6 +177,75 @@ def add_report_xray(request):
 
     else:
         form = DocumentForm()
+    return redirect('home-page')
+
+def upload(request):
+    load_dotenv('D:/DJANGO/.env')
+
+# Retrieve MongoDB connection details from environment variables
+    username = os.getenv("MONGODB_USERNAME")
+    password = os.getenv("MONGODB_PASSWORD")
+    cluster_url = os.getenv("MONGODB_CLUSTER_URL")
+
+# Construct the MongoDB URI for MongoDB Atlas
+    mongo_uri = f"mongodb+srv://{username}:{password}@{cluster_url}/?retryWrites=true&w=majority"
+
+# Connect to MongoDB Atlas cluster
+    client = pymongo.MongoClient(mongo_uri)
+
+# Select the database and collection
+    db = client["RISPATIENT"]
+    collection = db["patient_data"]
+
+    fs = GridFS(db)
+
+# Path to the file you want to upload
+    path = "D:/DJANGO/RIS/Reports/report.docx"
+    
+# Open the file and upload it to MongoDB using GridFS
+    with open(path, 'rb') as file:
+    # Store the file in MongoDB using GridFS
+        stored_file = fs.put(file, filename='report.docx')
+
+    # path1 = "D:\DJANGO\RIS\Radiology-Information-System-RIS-\RIS_project\media\x_ray\xray.png"
+    # with open(path1, 'rb') as file:
+    #     stored_file2 = fs.put(file, filename='xray.png')
+
+
+    if stored_file:
+        print(f"File uploaded successfully with id: {stored_file}")
+        # patient_detials = request.session.get('patient_detials')
+        
+        name = request.GET.get('name')
+        age = request.GET.get('age')
+        address = request.GET.get('address')
+        email = request.GET.get('email')
+        gender = request.GET.get('gender')
+        prescribing_doctor = request.GET.get('dr')
+        prescribed_xray = request.GET.get('xray')
+        date_today = request.GET.get('date_today')
+
+        patient_detials = {
+            "date": date_today,
+            "name": name,
+            "age": age,
+            "address": address,
+            "email": email,
+            "gender": gender,
+            "prescribing_doctor": prescribing_doctor,
+            "prescribed_xray": prescribed_xray,
+            "file_id": str(stored_file),
+            "file_name": "report.docx"
+        }
+        result = collection.insert_one(patient_detials)
+        
+        if result.inserted_id:
+            print(f"Patient details inserted successfully with id: {result.inserted_id}")
+        else:
+            print("Failed to insert patient details")
+    else:
+        print("Failed to upload file")
+    
     return redirect('home-page')
 
 
