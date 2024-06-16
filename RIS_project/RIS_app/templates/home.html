@@ -223,8 +223,9 @@
                 <input type="file" id="uploaded_file" name="uploaded_file" required>
 
                 <button type="button" class="btn prevBtn">Previous</button>
-                <button type="submit" class="btn">Submit</button>
-
+                <a href="{% url 'upload' %}">
+                    <button type="submit" class="btn">Submit</button>
+                </a>
             </div>
             <button type="button" class="btn cancel" id="closeFormBtn">Close</button>
         </form>
