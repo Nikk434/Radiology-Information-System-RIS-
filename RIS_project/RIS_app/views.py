@@ -79,10 +79,10 @@ def add_new_patient(request):
         collection.insert_one(patient_detials)
         print("Content stored in MongoDB successfully.")
 
-        query_params = f"?name={name}&age={age}&address={address}&email={email}&gender={gender}&dr={prescribing_doctor}&xray={prescribed_xray}&date_today={date_today}"
-        return redirect(reverse('upload') + query_params)
-        
+        # query_params = f"?name={name}&age={age}&address={address}&email={email}&gender={gender}&dr={prescribing_doctor}&xray={prescribed_xray}&date_today={date_today}"
+        # return redirect(reverse('upload') + query_params)
         return redirect('home-page')
+        
 
     return render(request, 'add_new_patient.html')
     
@@ -151,21 +151,6 @@ def add_report_xray(request):
     # Replace placeholders and save the document
         replace_placeholders(template_path, output_path, user_info)
 
-        # # print(f"Document saved as {output_path}")
-
-        # #function to add xray image 
-        # def get_xray():
-        #     if request.method == 'POST':
-        #         form = DocumentForm(request.POST, request.FILES)
-        #         if form.is_valid():
-        #             form.save()
-        #             print("Xray uploaded")
-        #             return redirect('home')  # Redirect to the home page or another relevant page
-        #     else:   
-        #         form = DocumentForm() 
-        #         print("loda lasun")
-
-        # get_xray()
         form = DocumentForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
@@ -173,49 +158,45 @@ def add_report_xray(request):
         else:
             print("Form is not valid")
 
-        return redirect('home-page')  # Redirect to the home page or another relevant page
+        query_params = {
+            'name': name,
+            'age': age,
+            'address': request.POST.get('address'),
+            'email': request.POST.get('email'),
+            'gender': gender,
+            'dr': referringPhysicianName,
+            'xray': typeOfExamination,
+            'date_today': request.session.get('date_today'),
+        }
+        url = reverse('upload') + '?' + '&'.join([f"{key}={value}" for key, value in query_params.items()])
+        return redirect(url)
 
     else:
         form = DocumentForm()
     return redirect('home-page')
 
 def upload(request):
-    load_dotenv('D:/DJANGO/.env')
+    if request.method == 'POST':
+        load_dotenv('D:/DJANGO/.env')
 
-# Retrieve MongoDB connection details from environment variables
-    username = os.getenv("MONGODB_USERNAME")
-    password = os.getenv("MONGODB_PASSWORD")
-    cluster_url = os.getenv("MONGODB_CLUSTER_URL")
+        username = os.getenv("MONGODB_USERNAME")
+        password = os.getenv("MONGODB_PASSWORD")
+        cluster_url = os.getenv("MONGODB_CLUSTER_URL")
 
-# Construct the MongoDB URI for MongoDB Atlas
-    mongo_uri = f"mongodb+srv://{username}:{password}@{cluster_url}/?retryWrites=true&w=majority"
+        # Construct the MongoDB URI for MongoDB Atlas
+        mongo_uri = f"mongodb+srv://{username}:{password}@{cluster_url}/?retryWrites=true&w=majority"
 
-# Connect to MongoDB Atlas cluster
-    client = pymongo.MongoClient(mongo_uri)
+        client = pymongo.MongoClient(mongo_uri)
 
-# Select the database and collection
-    db = client["RISPATIENT"]
-    collection = db["patient_data"]
+        # Select the database and collection
+        db = client["RISPATIENT"]
+        collection = db["patient_data"]
 
-    fs = GridFS(db)
+        fs = GridFS(db)
 
-# Path to the file you want to upload
-    path = "D:/DJANGO/RIS/Reports/report.docx"
-    
-# Open the file and upload it to MongoDB using GridFS
-    with open(path, 'rb') as file:
-    # Store the file in MongoDB using GridFS
-        stored_file = fs.put(file, filename='report.docx')
+        report_path = "D:/DJANGO/RIS/Reports/report.docx"
+        image_path = "D:/DJANGO/RIS/Radiology-Information-System-RIS-/RIS_project/media/x_ray/xray.png"
 
-    # path1 = "D:\DJANGO\RIS\Radiology-Information-System-RIS-\RIS_project\media\x_ray\xray.png"
-    # with open(path1, 'rb') as file:
-    #     stored_file2 = fs.put(file, filename='xray.png')
-
-
-    if stored_file:
-        print(f"File uploaded successfully with id: {stored_file}")
-        # patient_detials = request.session.get('patient_detials')
-        
         name = request.GET.get('name')
         age = request.GET.get('age')
         address = request.GET.get('address')
@@ -225,7 +206,7 @@ def upload(request):
         prescribed_xray = request.GET.get('xray')
         date_today = request.GET.get('date_today')
 
-        patient_detials = {
+        patient_details = {
             "date": date_today,
             "name": name,
             "age": age,
@@ -234,19 +215,38 @@ def upload(request):
             "gender": gender,
             "prescribing_doctor": prescribing_doctor,
             "prescribed_xray": prescribed_xray,
-            "file_id": str(stored_file),
-            "file_name": "report.docx"
         }
-        result = collection.insert_one(patient_detials)
-        
+
+        # Upload the report file
+        with open(report_path, 'rb') as file:
+            stored_file = fs.put(file, filename='report.docx')
+
+        if stored_file:
+            print(f"Report file uploaded successfully with id: {stored_file}")
+            # Add report file metadata to patient details
+            patient_details["report_file_id"] = stored_file
+            patient_details["report_file_name"] = "report.docx"
+
+        # Upload the image file
+        with open(image_path, "rb") as image_file:
+            stored_img = fs.put(image_file, filename="xray.png")
+
+        if stored_img:
+            print(f"Image file uploaded successfully with id: {stored_img}")
+            # Add image file metadata to patient details
+            patient_details["image_file_id"] = stored_img
+            patient_details["image_file_name"] = "xray.png"
+
+        # Insert patient details into MongoDB collection
+        result = collection.insert_one(patient_details)
+
         if result.inserted_id:
             print(f"Patient details inserted successfully with id: {result.inserted_id}")
         else:
             print("Failed to insert patient details")
-    else:
-        print("Failed to upload file")
-    
+
     return redirect('home-page')
+
 
 
 def register(request):
