@@ -247,7 +247,46 @@ def upload(request):
 
     return redirect('home-page')
 
+def search_for(request):
+    load_dotenv('D:/DJANGO/.env')
 
+    # Retrieve MongoDB connection details from environment variables
+    username = os.getenv("MONGODB_USERNAME")
+    password = os.getenv("MONGODB_PASSWORD")
+    cluster_url = os.getenv("MONGODB_CLUSTER_URL")
+
+    # Construct the MongoDB URI for MongoDB Atlas
+    mongo_uri = f"mongodb+srv://{username}:{password}@{cluster_url}/?retryWrites=true&w=majority"
+
+    # Connect to MongoDB Atlas cluster
+    client = pymongo.MongoClient(mongo_uri)
+
+    # Select the database and collection
+    db = client["RISPATIENT"]
+    collection = db["patient_data"]
+
+    # Ensure a text index is created on the fields you want to search
+    collection.create_index([("name", "text"), ("email", "text"), ("address", "text")])
+
+    # Initialize an empty list to store search results
+    result_list = []
+
+    if request.method == 'POST':
+        # Retrieve the search text from the form
+        search_text = request.POST.get('search_input', '')
+
+        # Construct the query using text search
+        query = {"$text": {"$search": search_text}}
+
+        # Find documents that match the query
+        results = collection.find(query)
+
+        for result in results:
+            result_list.append(result)
+
+    return render(request, 'search_for.html', {'results': result_list})
+
+    
 
 def register(request):
     if request.user.is_authenticated:
