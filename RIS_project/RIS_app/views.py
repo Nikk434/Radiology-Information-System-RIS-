@@ -221,6 +221,7 @@ def upload(request):
         with open(report_path, 'rb') as file:
             stored_file = fs.put(file, filename='report.docx')
 
+
         if stored_file:
             print(f"Report file uploaded successfully with id: {stored_file}")
             # Add report file metadata to patient details
@@ -230,6 +231,7 @@ def upload(request):
         # Upload the image file
         with open(image_path, "rb") as image_file:
             stored_img = fs.put(image_file, filename="xray.png")
+
 
         if stored_img:
             print(f"Image file uploaded successfully with id: {stored_img}")
@@ -283,10 +285,38 @@ def search_for(request):
 
         for result in results:
             result_list.append(result)
+        # print(len(result_list))
+        # for key in result.keys():
+        #     print(key)
+        stored_file = result["report_file_id"]
+        stored_img = result["image_file_id"]
+        
+        # print(type(result))
+
+        # print(len(results))
+
+        
+
+        def download(file_id, filename):
+            fs = GridFS(db)
+            file_document = fs.find_one({"_id": file_id})
+            if file_document:
+                save_directory = "D:/DJANGO/mongo_downloads"
+                os.makedirs(save_directory, exist_ok=True)
+                save_path = os.path.join(save_directory, filename)
+                with open(save_path, 'wb') as file_stream:
+                    file_stream.write(file_document.read())
+                print(f"File downloaded successfully: {save_path}")
+            else:
+                print("Not found")
+
+        # print(stored_file)
+        # print(stored_img)
+
+        download(stored_file, "report.docx")
+        download(stored_img, "xray.png")
 
     return render(request, 'search_for.html', {'results': result_list})
-
-    
 
 def register(request):
     if request.user.is_authenticated:
