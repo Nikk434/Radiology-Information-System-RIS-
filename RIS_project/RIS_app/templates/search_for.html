@@ -33,6 +33,7 @@
                     <th>Gender</th>
                     <th>Prescribing Doctor</th>
                     <th>Prescribed X-Ray</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -47,6 +48,9 @@
                     <td>{{ result.gender }}</td>
                     <td>{{ result.prescribing_doctor }}</td>
                     <td>{{ result.prescribed_xray }}</td>
+                    <td>
+                        <button>Download report/xray</button>
+                    </td>
                 </tr>
                 {% endfor %}
                 {% else %}
