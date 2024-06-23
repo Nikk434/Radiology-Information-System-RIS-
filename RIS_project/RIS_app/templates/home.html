@@ -95,8 +95,14 @@
 <body>
     <h1>Welcome, {{ username }}</h1>
     <p>Today's Date: {{ date_today }}</p>
+    <a href="{% url 'add_new_patient' %}">
+        <button>Add new patient</button> 
+    </a>
     <a href="{% url 'search_for' %}">
-        search for 
+        <button>search for</button> 
+    </a>
+    <a href="{% url 'logout' %}">
+        <button>Log out</button> 
     </a>
     <h2>Patients Data for Today</h2>
     <table>
