@@ -15,10 +15,13 @@ from .forms import DocumentForm
 from docx import Document
 import json
 from django.urls import reverse
+from django.contrib.auth.decorators import login_required
+
 
 load_dotenv('D:\DJANGO\.env')
 
 # Create your views here.
+@login_required
 def home(request):
     name = request.user.username if request.user.is_authenticated else None
     x = datetime.datetime.now()
@@ -42,6 +45,7 @@ def home(request):
 
     return render(request, 'home.html', {'username': name, 'date_today': date_today, 'time_today':time_today, 'data': data})
 
+@login_required
 def add_new_patient(request):
     if request.method == 'POST':
         name = request.POST.get('name')
@@ -83,9 +87,9 @@ def add_new_patient(request):
         # return redirect(reverse('upload') + query_params)
         return redirect('home-page')
         
-
     return render(request, 'add_new_patient.html')
     
+@login_required
 def add_report_xray(request):
     if request.method == 'POST':
         name = request.POST.get('name')
@@ -175,6 +179,7 @@ def add_report_xray(request):
         form = DocumentForm()
     return redirect('home-page')
 
+@login_required
 def upload(request):
     if request.method == 'POST':
         load_dotenv('D:/DJANGO/.env')
@@ -249,6 +254,7 @@ def upload(request):
 
     return redirect('home-page')
 
+@login_required
 def search_for(request):
     load_dotenv('D:/DJANGO/.env')
 
@@ -285,18 +291,10 @@ def search_for(request):
 
         for result in results:
             result_list.append(result)
-        # print(len(result_list))
-        # for key in result.keys():
-        #     print(key)
+        
         stored_file = result["report_file_id"]
         stored_img = result["image_file_id"]
         
-        # print(type(result))
-
-        # print(len(results))
-
-        
-
         def download(file_id, filename):
             fs = GridFS(db)
             file_document = fs.find_one({"_id": file_id})
@@ -310,9 +308,6 @@ def search_for(request):
             else:
                 print("Not found")
 
-        # print(stored_file)
-        # print(stored_img)
-
         download(stored_file, "report.docx")
         download(stored_img, "xray.png")
 
@@ -320,8 +315,7 @@ def search_for(request):
 
 def register(request):
     if request.user.is_authenticated:
-        return redirect('home-page')
-    
+        return redirect('home-page') 
     if request.method == 'POST':
         name = request.POST.get('username')
         email = request.POST.get('email')
@@ -340,14 +334,16 @@ def register(request):
         new_user = User.objects.create_user(username=name, email=email, password=password)
         new_user.save()
         messages.success(request, "Registration suceessful! Log in now ")
-        # return render(request, 'todoapp/login.html', {})
         return redirect('login')
-
     return render(request, 'register.html', {})
 
+def logout_view(request):
+    logout(request)
+    return redirect('login')
+
 def login(request):
-    # if request.user.is_authenticated:
-    #     return redirect('home-page')
+    if request.user.is_authenticated:
+        return redirect('home-page')
     
     if request.method =='POST':
         username = request.POST.get('username')
